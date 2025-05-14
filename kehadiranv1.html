@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Sahkan Kehadiran</title>
+  <meta charset="UTF-8" />
+  <style>
+    body {
+      font-family: sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      flex-direction: column;
+      text-align: center;
+      margin: 0;
+    }
+
+    #formFrame {
+      width: 100%;
+      max-width: 640px;
+      height: 480px;
+      border: none;
+    }
+  </style>
+</head>
+<body>
+  <h2 id="heading">Menyemak token kehadiran...</h2>
+  <p id="status">Sila tunggu...</p>
+
+  <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const token = parseInt(urlParams.get("token"));
+    const masa = parseInt(urlParams.get("masa"));
+    const now = Date.now();
+
+    const statusEl = document.getElementById("status");
+    const headingEl = document.getElementById("heading");
+
+    const isValid = token && masa && now < (masa + 60000); // 1 minit
+
+    if (isValid) {
+      headingEl.textContent = "Token sah.";
+      statusEl.innerHTML = `
+        <iframe 
+          id="formFrame"
+          src="https://forms.office.com/Pages/ResponsePage.aspx?id=c5dsJ2U0yE6L4UYAgPihgmXFtmhwgRhCnYFH4BloqHBUOTNFSzNFQlk5M0RCWE9HTExISVZJMTlOQy4u&embed=true"
+          frameborder="0"
+          marginwidth="0"
+          marginheight="0"
+          allowfullscreen
+          webkitallowfullscreen
+          mozallowfullscreen
+          msallowfullscreen>
+        </iframe>`;
+    } else {
+      headingEl.textContent = "Akses tidak dibenarkan";
+      statusEl.innerHTML = "<span style='color:red'>Token telah tamat tempoh atau tidak sah. Sila imbas semula kod QR yang sah.</span>";
+    }
+  </script>
+</body>
+</html>
