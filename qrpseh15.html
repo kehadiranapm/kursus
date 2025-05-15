@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Kehadiran</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+    }
+
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      font-family: sans-serif;
+    }
+
+    #qrcode {
+      margin-top: 20px;
+    }
+
+    #tokenDisplay {
+      margin-top: 15px;
+      font-size: 18px;
+      font-weight: bold;
+      color: #333;
+    }
+
+    #timestampDisplay {
+      font-size: 14px;
+      color: #777;
+    }
+  </style>
+</head>
+<body>
+  <h2>Scan untuk rekod kehadiran</h2>
+  <div id="qrcode"></div>
+  <div id="tokenDisplay">Kod Kehadiran: ...</div>
+  <div id="timestampDisplay">Sah sehingga: ...</div>
+
+  <script>
+    // Borang anda
+    const baseFormUrl = "https://kehadiranapm.github.io/kursus/psehuu1bil152025.html";
+
+    // Kira token berdasarkan masa peranti
+    function getTokenInfo() {
+      const now = Date.now();
+      const intervalMs = 10000;
+      const tokenIndex = Math.floor(now / intervalMs);
+      const token = 1 + tokenIndex * 2; // Token ganjil: 1,3,5...
+      const generatedAt = tokenIndex * intervalMs;
+      const expiryAt = generatedAt + 10000; // 10 saat
+      return { token, generatedAt, expiryAt };
+    }
+
+    // Paparkan QR dengan token & masa
+    function generateQR() {
+      const { token, generatedAt, expiryAt } = getTokenInfo();
+      const qrData = `${baseFormUrl}?token=${token}&masa=${generatedAt}`;
+
+      document.getElementById("qrcode").innerHTML = "";
+
+      new QRCode(document.getElementById("qrcode"), {
+        text: qrData,
+        width: 256,
+        height: 256
+      });
+
+      const expiryTime = new Date(expiryAt).toLocaleTimeString('ms-MY', { hour12: false });
+
+      document.getElementById("tokenDisplay").textContent = "Kod Kehadiran: " + token;
+      document.getElementById("timestampDisplay").textContent = "Sah sehingga: " + expiryTime;
+    }
+
+    generateQR();
+    setInterval(generateQR, 10000); // Update QR setiap 10 saat
+  </script>
+
+  <!-- Sekat akses terus ke URL jika dibuka tanpa token & masa -->
+  <script>
+    // Dijalankan hanya jika dibuka dari QR (bukan viewer biasa)
+    if (window.location.href.includes("forms.office.com")) {
+      const urlParams = new URLSearchParams(window.location.search);
+      const token = parseInt(urlParams.get("token"));
+      const masa = parseInt(urlParams.get("masa"));
+      const now = Date.now();
+
+      const isValid = token && masa && now < (masa + 10000);
+
+      if (!isValid) {
+        // Sekat jika tiada token atau token dah luput
+        document.body.innerHTML = "<h1>Akses tidak sah atau token telah tamat tempoh.</h1>";
+        throw new Error("Token tidak sah");
+      }
+    }
+  </script>
+</body>
+</html>

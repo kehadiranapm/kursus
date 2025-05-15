@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Sahkan Kehadiran</title>
+  <meta charset="UTF-8" />
+  <style>
+    body {
+      font-family: sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      flex-direction: column;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <h2>Menyemak token kehadiran...</h2>
+  <p id="status">Sila tunggu...</p>
+
+  <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const token = parseInt(urlParams.get("token"));
+    const masa = parseInt(urlParams.get("masa"));
+    const now = Date.now();
+
+    const statusEl = document.getElementById("status");
+
+    const isValid = token && masa && now < (masa + 60000); // 1 minit
+
+    if (isValid) {
+      statusEl.textContent = "Token sah. Anda akan dihantar ke borang kehadiran...";
+      setTimeout(() => {
+        window.location.href = "https://forms.office.com/r/rTqgqRguTP";
+      }, 1500);
+    } else {
+      statusEl.innerHTML = "<span style='color:red'>Token telah tamat tempoh. Sila imbas semula kod QR yang sah.</span>";
+    }
+  </script>
+</body>
+</html>
