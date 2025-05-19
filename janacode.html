@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Admin - Jana QR Kehadiran</title>
+  <meta charset="UTF-8">
+  <style>
+    body {
+      font-family: sans-serif;
+      max-width: 600px;
+      margin: 40px auto;
+      padding: 20px;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+    }
+
+    h2 {
+      text-align: center;
+    }
+
+    label {
+      display: block;
+      margin-top: 15px;
+      font-weight: bold;
+    }
+
+    input, select, button {
+      width: 100%;
+      padding: 8px;
+      margin-top: 5px;
+      font-size: 16px;
+    }
+
+    button {
+      margin-top: 20px;
+      background-color: #1976d2;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #135ba1;
+    }
+  </style>
+</head>
+<body>
+  <h2>Jana Fail QR Kehadiran</h2>
+
+  <label for="namaKursus">1. Nama Kursus:</label>
+  <input type="text" id="namaKursus" placeholder="Contoh: Latihan Asas CPR">
+
+  <label for="bilKursus">2. Bilangan Kursus:</label>
+  <select id="bilKursus">
+    <option disabled selected>Pilih Bilangan Kursus</option>
+    <!-- Auto generate 1 to 30 -->
+    <script>
+      for (let i = 1; i <= 30; i++) {
+        const opt = document.createElement("option");
+        opt.value = `Bil.${i}/2025`;
+        opt.textContent = `Bil.${i}/2025`;
+        document.currentScript.parentNode.appendChild(opt);
+      }
+    </script>
+  </select>
+
+	<label>3. Tarikh Kursus:</label>
+	<div style="display: flex; gap: 10px;">
+	  <div style="flex: 1;">
+		<label for="tarikhMula">Tarikh Mula:</label>
+		<input type="date" id="tarikhMula">
+	  </div>
+	  <div style="flex: 1;">
+		<label for="tarikhTamat">Tarikh Tamat:</label>
+		<input type="date" id="tarikhTamat">
+	  </div>
+	</div>	   
+
+  <label for="formLink">4. Link Kehadiran MS Form:</label>
+  <input type="url" id="formLink" placeholder="https://forms.office.com/..." required>
+
+  <button onclick="generateHTML()">Muat Turun QR Kehadiran</button>
+
+  <script>
+    function generateHTML() {
+  const nama = document.getElementById("namaKursus").value.trim();
+  const bil = document.getElementById("bilKursus").value;
+  const tarikhMula = document.getElementById("tarikhMula").value;													 
+  const tarikhTamat = document.getElementById("tarikhTamat").value;
+  const form = document.getElementById("formLink").value.trim();
+
+  if (!nama || !bil || !tarikhMula || !tarikhTamat || !form) {
+  alert("Sila lengkapkan semua maklumat.");
+  return;
+}
+
+	const mulaDate = new Date(tarikhMula);
+  const tamatDate = new Date(tarikhTamat);
+
+  if (mulaDate > tamatDate) {
+    alert("Tarikh mula tidak boleh melebihi tarikh tamat.");
+    return;
+  }
+
+const mulaFormatted = new Date(tarikhMula).toLocaleDateString('ms-MY', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric'
+  });
+
+  const tamatFormatted = new Date(tarikhTamat).toLocaleDateString('ms-MY', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric'
+  });
+
+  const htmlContent = `
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Kehadiran<\/title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"><\/script>
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+    }
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      font-family: sans-serif;
+    }
+    #qrcode {
+      margin-top: 20px;
+    }
+    #tokenDisplay {
+      display: none;
+    }
+    #timestampDisplay {
+      font-size: 20px;
+      font-weight: bold;
+      color: #333;
+      margin-top: 15px;
+    }
+    .info {
+      margin-top: 10px;
+      font-size: 18px;
+      text-align: center;
+    }
+    .label {
+      font-weight: bold;
+    }
+  <\/style>
+<\/head>
+<body>
+  <h2>Scan untuk rekod kehadiran<\/h2>
+
+  <div class="info">
+    <span class="label">Nama Kursus:<\/span>
+    <span id="namaKursus">${nama}<\/span>
+	<span>${bil}<\/span>
+  <\/div>
+
+  <div class="info">
+    <span class="label">Tarikh Kursus:<\/span>
+    <span>${mulaFormatted}<\/span> hingga <span>${tamatFormatted}<\/span>
+  <\/div>
+
+  <div id="qrcode"><\/div>
+  <div id="tokenDisplay">Kod Kehadiran: ...<\/div>
+  <div id="timestampDisplay">Sah sehingga: ...<\/div>
+
+  <script>
+    const baseCheckUrl = "https://kehadiranapm.github.io/kursus/validator.html";
+    const formUrl = "${form}";
+
+    function getTokenInfo() {
+      const now = Date.now();
+      const intervalMs = 10000;
+      const tokenIndex = Math.floor(now / intervalMs);
+      const token = 1 + tokenIndex * 2;
+      const generatedAt = tokenIndex * intervalMs;
+      const expiryAt = generatedAt + 60000;
+      return { token, generatedAt, expiryAt };
+    }
+
+    function generateQR() {
+      const { token, generatedAt, expiryAt } = getTokenInfo();
+      const encodedForm = encodeURIComponent(formUrl);
+      const qrData = \`\${baseCheckUrl}?token=\${token}&masa=\${generatedAt}&form=\${encodedForm}\`;
+
+      document.getElementById("qrcode").innerHTML = "";
+
+      new QRCode(document.getElementById("qrcode"), {
+        text: qrData,
+        width: 256,
+        height: 256
+      });
+
+      const expiryTime = new Date(expiryAt).toLocaleTimeString('ms-MY', { hour12: false });
+      document.getElementById("timestampDisplay").textContent = "Sah sehingga: " + expiryTime;
+    }
+
+    generateQR();
+    setInterval(generateQR, 10000);
+  <\/script>
+<\/body>
+<\/html>
+`;
+
+const blob = new Blob([htmlContent], { type: "text/html" });
+const url = URL.createObjectURL(blob);
+
+// Slug untuk nama kursus
+const slugifiedName = nama
+  .toLowerCase()
+  .replace(/[^a-z0-9 ]/gi, '') // buang simbol pelik
+  .trim()
+  .replace(/\s+/g, '-');
+
+// Slug untuk bil kursus: "Bil.5/2025" → "bil-5-2025"
+const bilSlug = bil.toLowerCase().replace(/[^\w\/]/g, '').replace(/\//g, '-');
+
+// Tarikh mula format mm-dd
+const tarikhObj = new Date(tarikhMula);
+const mm = String(tarikhObj.getMonth() + 1).padStart(2, '0');
+const dd = String(tarikhObj.getDate()).padStart(2, '0');
+const tarikhSlug = `${mm}-${dd}`;
+
+// Gabungan nama fail
+const fileName = `kehadiran-${slugifiedName}-${bilSlug}-${tarikhSlug}.html`;
+
+const link = document.createElement("a");
+link.href = url;
+link.download = fileName;
+link.click();
+}
+  </script>
+</body>
+</html>
