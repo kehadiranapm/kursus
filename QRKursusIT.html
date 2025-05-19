@@ -22,15 +22,14 @@
     }
 
     #tokenDisplay {
-      margin-top: 15px;
-      font-size: 18px;
-      font-weight: bold;
-      color: #333;
+      display: none; /* disembunyikan */
     }
 
     #timestampDisplay {
-      font-size: 14px;
-      color: #777;
+      font-size: 20px;     /* saiz lebih besar */
+      font-weight: bold;   /* tebal */
+      color: #333;
+      margin-top: 15px;
     }
   </style>
 </head>
@@ -72,7 +71,7 @@
 
       const expiryTime = new Date(expiryAt).toLocaleTimeString('ms-MY', { hour12: false });
 
-      document.getElementById("tokenDisplay").textContent = "Kod Kehadiran: " + token;
+      // Token hidden, no need to update tokenDisplay
       document.getElementById("timestampDisplay").textContent = "Sah sehingga: " + expiryTime;
     }
 
