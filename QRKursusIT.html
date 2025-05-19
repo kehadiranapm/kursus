@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Kehadiran</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+    }
+
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      font-family: sans-serif;
+    }
+
+    #qrcode {
+      margin-top: 20px;
+    }
+
+    #tokenDisplay {
+      margin-top: 15px;
+      font-size: 18px;
+      font-weight: bold;
+      color: #333;
+    }
+
+    #timestampDisplay {
+      font-size: 14px;
+      color: #777;
+    }
+  </style>
+</head>
+<body>
+  <h2>Scan untuk rekod kehadiran</h2>
+  <div id="qrcode"></div>
+  <div id="tokenDisplay">Kod Kehadiran: ...</div>
+  <div id="timestampDisplay">Sah sehingga: ...</div>
+
+  <script>
+    // Link ke page semakan token (generic)
+    const baseCheckUrl = "https://gregor350z.github.io/kehadiran-token/kehadiran.html";
+
+    // URL borang yang boleh diubah sekali sahaja di sini
+    const formUrl = "https://forms.office.com/r/WQeGSrLshN";
+
+    function getTokenInfo() {
+      const now = Date.now();
+      const intervalMs = 10000;
+      const tokenIndex = Math.floor(now / intervalMs);
+      const token = 1 + tokenIndex * 2;
+      const generatedAt = tokenIndex * intervalMs;
+      const expiryAt = generatedAt + 60000;
+      return { token, generatedAt, expiryAt };
+    }
+
+    function generateQR() {
+      const { token, generatedAt, expiryAt } = getTokenInfo();
+      const encodedForm = encodeURIComponent(formUrl);
+      const qrData = `${baseCheckUrl}?token=${token}&masa=${generatedAt}&form=${encodedForm}`;
+
+      document.getElementById("qrcode").innerHTML = "";
+
+      new QRCode(document.getElementById("qrcode"), {
+        text: qrData,
+        width: 256,
+        height: 256
+      });
+
+      const expiryTime = new Date(expiryAt).toLocaleTimeString('ms-MY', { hour12: false });
+
+      document.getElementById("tokenDisplay").textContent = "Kod Kehadiran: " + token;
+      document.getElementById("timestampDisplay").textContent = "Sah sehingga: " + expiryTime;
+    }
+
+    generateQR();
+    setInterval(generateQR, 10000);
+  </script>
+</body>
+</html>
