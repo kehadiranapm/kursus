@@ -57,8 +57,8 @@
     <script>
       for (let i = 1; i <= 30; i++) {
         const opt = document.createElement("option");
-        opt.value = `Bil.${i}/2025`;
-        opt.textContent = `Bil.${i}/2025`;
+        opt.value = `Bil.${i}/2026`;
+        opt.textContent = `Bil.${i}/2026`;
         document.currentScript.parentNode.appendChild(opt);
       }
     </script>
@@ -220,7 +220,7 @@ const slugifiedName = nama
   .trim()
   .replace(/\s+/g, '-');
 
-// Slug untuk bil kursus: "Bil.5/2025" → "bil-5-2025"
+// Slug untuk bil kursus: "Bil.5/2026" → "bil-5-2026"
 const bilSlug = bil.toLowerCase().replace(/[^\w\/]/g, '').replace(/\//g, '-');
 
 // Tarikh mula format mm-dd
